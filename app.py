@@ -7,7 +7,22 @@ import streamlit as st
 from keras.models import load_model
 from keras.utils import pad_sequences
 
-MODEL_DIR = Path(__file__).parent / "model"
+BASE_DIR = Path(__file__).parent
+
+
+def find_file(pattern):
+    """Find a file by name pattern in the repo, whatever its exact name or folder."""
+    matches = sorted(
+        p for p in BASE_DIR.rglob(pattern)
+        if "venv" not in p.parts and ".git" not in p.parts
+    )
+    if not matches:
+        found = [str(p.relative_to(BASE_DIR)) for p in BASE_DIR.rglob("*")
+                 if p.is_file() and ".git" not in p.parts]
+        st.error(f"Could not find a file matching '{pattern}'. Files in repo: {found}")
+        st.stop()
+    return matches[0]
+
 
 st.set_page_config(page_title="College FAQ Chatbot", page_icon="🎓")
 
@@ -15,12 +30,12 @@ st.set_page_config(page_title="College FAQ Chatbot", page_icon="🎓")
 @st.cache_resource
 def load_everything():
     """Load models once; Streamlit reuses them on every rerun."""
-    with open(MODEL_DIR / "config.json") as f:
+    with open(find_file("config*.json")) as f:
         config = json.load(f)
-    with open(MODEL_DIR / "tokenizer.pkl", "rb") as f:
+    with open(find_file("tokenizer*.pkl"), "rb") as f:
         tokenizer = pickle.load(f)
-    encoder = load_model(MODEL_DIR / "encoder.keras", compile=False)
-    decoder = load_model(MODEL_DIR / "decoder.keras", compile=False)
+    encoder = load_model(find_file("encoder*.keras"), compile=False)
+    decoder = load_model(find_file("decoder*.keras"), compile=False)
     return config, tokenizer, encoder, decoder
 
 
