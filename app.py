@@ -4,8 +4,8 @@ from pathlib import Path
 
 import numpy as np
 import streamlit as st
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from keras.models import load_model
+from keras.utils import pad_sequences
 
 MODEL_DIR = Path(__file__).parent / "model"
 
